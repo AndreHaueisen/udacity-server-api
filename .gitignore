@@ -1,4 +1,6 @@
 /.yarn
 /node_modules
+
 .pnp.*
 .env
+database.json

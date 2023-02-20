@@ -1,0 +1,6 @@
+
+CREATE TABLE IF NOT EXISTS migrations_table (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  description VARCHAR(255) NOT NULL
+);
