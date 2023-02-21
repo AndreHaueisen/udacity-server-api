@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS books_table (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(200) NOT NULL,
+  author VARCHAR(120) NOT NULL,
+  total_pages INT NOT NULL,
+  summary TEXT NOT NULL
+);
