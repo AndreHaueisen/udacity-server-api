@@ -1,4 +1,5 @@
 import client from '../database';
+import { PoolClient } from 'pg';
 
 export class Book {
   constructor(
@@ -31,71 +32,92 @@ interface BookRow {
 
 export class BookStore {
   async index(): Promise<Book[]> {
+    const conn = await this.connectToDB();
+
     try {
       const conn = await client.connect();
       const sql = 'SELECT * FROM books_table';
- 
       const result = await conn.query(sql);
-      conn.release();
 
       return result.rows.map(Book.fromRow);
     } catch (err) {
-      
       throw new Error(`Could not get books. Error: ${err}`);
+    } finally {
+      conn.release();
     }
   }
 
   async show(id: number): Promise<Book> {
+    const conn = await this.connectToDB();
     try {
-      const conn = await client.connect();
       const sql = 'SELECT * FROM books_table WHERE id=($1)';
       const result = await conn.query(sql, [id]);
-      conn.release();
 
       return Book.fromRow(result.rows[0]);
     } catch (err) {
       throw new Error(`Could not find book ${id}. Error: ${err}`);
+    } finally {
+      conn.release();
     }
   }
 
   async create(book: BookInput): Promise<Book> {
+    const conn = await this.connectToDB();
     try {
-      const conn = await client.connect();
       const sql = 'INSERT INTO books_table (title, author, total_pages, summary) VALUES($1, $2, $3, $4) RETURNING *';
       const result = await conn.query(sql, [book.title, book.author, book.totalPages, book.summary]);
       const newBook = result.rows[0];
-      conn.release();
 
       return Book.fromRow(newBook);
     } catch (err) {
       throw new Error(`Could not add new book ${book.title}. Error: ${err}`);
+    } finally {
+      conn.release();
     }
   }
 
   async update(book: Book): Promise<Book> {
+    const conn = await this.connectToDB();
+
     try {
-      const conn = await client.connect();
       const sql =
         'UPDATE books_table SET title=($1), author=($2), total_pages=($3), summary=($4) WHERE id=($5) RETURNING *';
       const result = await conn.query(sql, [book.title, book.author, book.totalPages, book.summary, book.id]);
       const updatedBook = result.rows[0];
-      conn.release();
 
       return Book.fromRow(updatedBook);
     } catch (err) {
       throw new Error(`Could not update book ${book.id}. Error: ${err}`);
+    } finally {
+      conn.release();
     }
   }
 
   async delete(id: number): Promise<void> {
-    try {
-      const conn = await client.connect();
-      const sql = 'DELETE FROM books_table WHERE id=($1)';
-      await conn.query(sql, [id]);
+    const conn = await this.connectToDB();
 
-      conn.release();
+    try {
+      const sql = 'DELETE FROM books_table WHERE id=($1)';
+      const result = await conn.query(sql, [id]);
+
+      if (result.rowCount === 0) {
+        throw new Error(`Could not find book ${id}`);
+      }
+
+      return;
     } catch (err) {
       throw new Error(`Could not delete book ${id}. Error: ${err}`);
+    } finally {
+      conn.release();
+    }
+  }
+
+  async connectToDB(): Promise<PoolClient> {
+    try {
+      const conn = await client.connect();
+      return conn;
+    } catch (err) {
+      throw new Error(`Could not connect to database. Error: ${err}`);
     }
   }
 }

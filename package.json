@@ -4,12 +4,13 @@
   "description": "",
   "main": "server.ts",
   "scripts": {
-    "start": "nodemon src/server.ts",
+    "start": "npm run prettier && nodemon src/server.ts",
     "lint": "eslint ./src --ext .ts",
     "watch": "tsc-watch --esModuleInterop src/server.ts --outDir ./dist --onSuccess \"node ./dist/server.js\"",
     "build": "npx tsc",
     "prettier": "prettier --write --config .prettierrc.json \"src/**/*.ts\" \"spec/**/*.ts\"",
-    "test": "npm run prettier && NODE_ENV=test db-migrate --env test up && jest --bail=false --detectOpenHandles ; NODE_ENV=test db-migrate --env test down"
+    "test": "npm run prettier && NODE_ENV=test db-migrate --env test up && jest --bail=false --detectOpenHandles ; NODE_ENV=test db-migrate --env test down",
+    "clear_test_db": "NODE_ENV=test db-migrate --env test down"
   },
   "author": "Udacity",
   "license": "ISC",

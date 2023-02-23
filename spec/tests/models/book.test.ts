@@ -61,6 +61,12 @@ describe('Book Model', () => {
     expect(result).toEqual([]);
   });
 
+  test('delete should throw an error if the book does not exist', async () => {
+    expect(async () => {
+      await store.delete(3);
+    }).toThrowError();
+  });
+
   afterAll(async () => {
     await client.end();
   });
