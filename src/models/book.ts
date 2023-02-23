@@ -34,11 +34,13 @@ export class BookStore {
     try {
       const conn = await client.connect();
       const sql = 'SELECT * FROM books_table';
+ 
       const result = await conn.query(sql);
       conn.release();
 
       return result.rows.map(Book.fromRow);
     } catch (err) {
+      
       throw new Error(`Could not get books. Error: ${err}`);
     }
   }
