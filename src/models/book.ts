@@ -1,5 +1,5 @@
 import client from '../database';
-import { PoolClient } from 'pg';
+import Store from './store';
 
 export class Book {
   constructor(
@@ -30,7 +30,7 @@ interface BookRow {
   summary: string;
 }
 
-export class BookStore {
+export class BookStore extends Store {
   async index(): Promise<Book[]> {
     const conn = await this.connectToDB();
 
@@ -109,15 +109,6 @@ export class BookStore {
       throw new Error(`Could not delete book ${id}. Error: ${err}`);
     } finally {
       conn.release();
-    }
-  }
-
-  async connectToDB(): Promise<PoolClient> {
-    try {
-      const conn = await client.connect();
-      return conn;
-    } catch (err) {
-      throw new Error(`Could not connect to database. Error: ${err}`);
     }
   }
 }

@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import { BookStore, Book } from '../../models/book';
+import { verifyAuthToken } from '../../utils/helpers';
 
 const books = express.Router();
 const store = new BookStore();
@@ -25,7 +26,7 @@ books.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
-books.post('/', async (req: Request, res: Response) => {
+books.post('/', verifyAuthToken, async (req: Request, res: Response) => {
   try {
     const rawBook = req.body;
     const newBook = await store.create({
@@ -34,6 +35,7 @@ books.post('/', async (req: Request, res: Response) => {
       totalPages: rawBook.totalPages as unknown as number,
       summary: rawBook.summary
     });
+
     res.json(newBook);
   } catch (err) {
     console.log(err);
@@ -41,7 +43,7 @@ books.post('/', async (req: Request, res: Response) => {
   }
 });
 
-books.put('/:id', async (req: Request, res: Response) => {
+books.put('/:id', verifyAuthToken, async (req: Request, res: Response) => {
   try {
     const rawBook = req.body;
     const updatedBook = await store.update(
@@ -60,7 +62,7 @@ books.put('/:id', async (req: Request, res: Response) => {
   }
 });
 
-books.delete('/:id', async (req: Request, res: Response) => {
+books.delete('/:id', verifyAuthToken, async (req: Request, res: Response) => {
   try {
     await store.delete(req.params.id as unknown as number);
     res.sendStatus(200);
