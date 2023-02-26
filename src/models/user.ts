@@ -4,20 +4,20 @@ import bcrypt from 'bcrypt';
 export class User {
   constructor(
     readonly username: string,
-    readonly first_name: string,
-    readonly last_name: string,
+    readonly firstName: string,
+    readonly lastName: string,
     readonly passwordDigest: string
-  ) {}
+  ) { }
 
   static fromRow(row: UserRow): User {
-    return new User(row.username, row.first_name, row.last_name, row.passwordDigest);
+    return new User(row.username, row.first_name, row.last_name, row.password_digest);
   }
 }
 
 export type UserInput = {
   username: string;
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
   password: string;
 };
 
@@ -25,7 +25,7 @@ interface UserRow {
   username: string;
   first_name: string;
   last_name: string;
-  passwordDigest: string;
+  password_digest: string;
 }
 
 export class UserStore extends Store {
@@ -60,7 +60,7 @@ export class UserStore extends Store {
         'INSERT INTO users_table (username, first_name, last_name, password_digest) VALUES($1, $2, $3, $4) RETURNING *';
       const passwordHash = bcrypt.hashSync(user.password + this.pepper, parseInt(this.saltRounds));
 
-      const result = await conn.query(sql, [user.username, user.first_name, user.last_name, passwordHash]);
+      const result = await conn.query(sql, [user.username, user.firstName, user.lastName, passwordHash]);
       const newUser = result.rows[0];
 
       return User.fromRow(newUser);
@@ -75,7 +75,7 @@ export class UserStore extends Store {
     const conn = await this.connectToDB();
 
     try {
-      const sql = 'SELECT password FROM users_table WHERE username=($1)';
+      const sql = 'SELECT * FROM users_table WHERE username=($1)';
       const result = await conn.query(sql, [username]);
 
       if (result.rows.length) {
