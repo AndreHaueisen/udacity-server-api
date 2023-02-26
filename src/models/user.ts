@@ -3,30 +3,28 @@ import bcrypt from 'bcrypt';
 
 export class User {
   constructor(
-    readonly id: number,
+    readonly username: string,
     readonly first_name: string,
     readonly last_name: string,
-    readonly username: string,
     readonly passwordDigest: string
   ) {}
 
   static fromRow(row: UserRow): User {
-    return new User(row.id, row.first_name, row.last_name, row.username, row.passwordDigest);
+    return new User(row.username, row.first_name, row.last_name, row.passwordDigest);
   }
 }
 
 export type UserInput = {
+  username: string;
   first_name: string;
   last_name: string;
-  username: string;
   password: string;
 };
 
 interface UserRow {
-  id: number;
+  username: string;
   first_name: string;
   last_name: string;
-  username: string;
   passwordDigest: string;
 }
 
@@ -35,12 +33,12 @@ export class UserStore extends Store {
     super();
   }
 
-  async show(id: number): Promise<User | null> {
+  async show(username: string): Promise<User | null> {
     const conn = await this.connectToDB();
 
     try {
-      const sql = 'SELECT * FROM users WHERE id=($1)';
-      const result = await conn.query(sql, [id]);
+      const sql = 'SELECT * FROM users_table WHERE username=($1)';
+      const result = await conn.query(sql, [username]);
 
       if (result.rows.length) {
         return User.fromRow(result.rows[0]);
@@ -48,7 +46,7 @@ export class UserStore extends Store {
 
       return null;
     } catch (err) {
-      throw new Error(`Could not find user ${id}. Error: ${err}`);
+      throw new Error(`Could not find user ${username}. Error: ${err}`);
     } finally {
       conn.release();
     }
@@ -59,10 +57,10 @@ export class UserStore extends Store {
 
     try {
       const sql =
-        'INSERT INTO users (first_name, last_name, username, password_digest) VALUES($1, $2, $3, $4) RETURNING *';
-      const hash = bcrypt.hashSync(user.password + this.pepper, parseInt(this.saltRounds));
+        'INSERT INTO users_table (username, first_name, last_name, password_digest) VALUES($1, $2, $3, $4) RETURNING *';
+      const passwordHash = bcrypt.hashSync(user.password + this.pepper, parseInt(this.saltRounds));
 
-      const result = await conn.query(sql, [user.username, hash]);
+      const result = await conn.query(sql, [user.username, user.first_name, user.last_name, passwordHash]);
       const newUser = result.rows[0];
 
       return User.fromRow(newUser);
@@ -77,7 +75,7 @@ export class UserStore extends Store {
     const conn = await this.connectToDB();
 
     try {
-      const sql = 'SELECT password FROM users WHERE username=($1)';
+      const sql = 'SELECT password FROM users_table WHERE username=($1)';
       const result = await conn.query(sql, [username]);
 
       if (result.rows.length) {
