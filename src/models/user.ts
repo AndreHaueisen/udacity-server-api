@@ -7,7 +7,7 @@ export class User {
     readonly firstName: string,
     readonly lastName: string,
     readonly passwordDigest: string
-  ) { }
+  ) {}
 
   static fromRow(row: UserRow): User {
     return new User(row.username, row.first_name, row.last_name, row.password_digest);

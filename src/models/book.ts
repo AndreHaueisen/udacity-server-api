@@ -1,4 +1,3 @@
-import client from '../database';
 import Store from './store';
 
 export class Book {
@@ -35,7 +34,6 @@ export class BookStore extends Store {
     const conn = await this.connectToDB();
 
     try {
-      const conn = await client.connect();
       const sql = 'SELECT * FROM books_table';
       const result = await conn.query(sql);
 
