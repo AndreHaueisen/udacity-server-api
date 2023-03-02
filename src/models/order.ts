@@ -3,7 +3,7 @@ import Store from './store';
 // Order ------------------------------------------------
 
 export class Order {
-  constructor(readonly id: number, _status: OrderStatus, _createdAt: Date, readonly username: string) {}
+  constructor(readonly id: number, readonly status: OrderStatus, readonly createdAt: Date, readonly username: string) {}
 
   static fromRow(row: OrderRow): Order {
     const status = OrderStatus[row.current_status as keyof typeof OrderStatus];
@@ -143,6 +143,21 @@ export class OrderStore extends Store {
       return OrderBook.fromRow(result.rows[0]);
     } catch (err) {
       throw new Error(`Could not add book to order. Error: ${err}`);
+    } finally {
+      conn.release();
+    }
+  }
+
+  async getOrdersBooks(orderId: number): Promise<OrderBook[]> {
+    const conn = await this.connectToDB();
+
+    try {
+      const sql = 'SELECT * FROM orders_books_table WHERE order_id=($1)';
+      const result = await conn.query(sql, [orderId]);
+
+      return result.rows.map(OrderBook.fromRow);
+    } catch (err) {
+      throw new Error(`Could not get order books. Error: ${err}`);
     } finally {
       conn.release();
     }

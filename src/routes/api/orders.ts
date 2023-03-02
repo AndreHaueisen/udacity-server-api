@@ -26,6 +26,16 @@ orders.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
+orders.get('/:id/books', async (req: Request, res: Response) => {
+  try {
+    const orderBooks = await store.getOrdersBooks(req.params.id as unknown as number);
+    res.json(orderBooks);
+  } catch (err) {
+    console.log(err);
+    res.status(400).json(err);
+  }
+});
+
 orders.post('/', verifyAuthToken, async (req: Request, res: Response) => {
   try {
     const rawOrderInput = req.body;
