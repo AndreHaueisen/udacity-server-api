@@ -26,6 +26,16 @@ books.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
+books.get('/:id/orders', async (req: Request, res: Response) => {
+  try {
+    const bookOrders = await store.getBooksOrders(req.params.id as unknown as number);
+    res.json(bookOrders);
+  } catch (err) {
+    console.log(err);
+    res.status(400).json(err);
+  }
+});
+
 books.post('/', verifyAuthToken, async (req: Request, res: Response) => {
   try {
     const rawBook = req.body;
