@@ -29,21 +29,6 @@ interface BookRow {
   summary: string;
 }
 
-export class BookOrder {
-  constructor(readonly bookId: number, readonly orderId: number, readonly quantity: number, readonly title: string) {}
-
-  static fromRow(row: BookOrderRow): BookOrder {
-    return new BookOrder(row.book_id, row.order_id, row.quantity, row.title);
-  }
-}
-
-interface BookOrderRow {
-  book_id: number;
-  order_id: number;
-  quantity: number;
-  title: string;
-}
-
 export class BookStore extends Store {
   async index(): Promise<Book[]> {
     const conn = await this.connectToDB();
@@ -120,22 +105,6 @@ export class BookStore extends Store {
       return;
     } catch (err) {
       throw new Error(`Could not delete book ${id}. Error: ${err}`);
-    } finally {
-      conn.release();
-    }
-  }
-
-  async getBooksOrders(id: number): Promise<BookOrder[]> {
-    const conn = await this.connectToDB();
-
-    try {
-      const sql =
-        'SELECT * FROM books_table INNER JOIN orders_books_table ON books_table.id = orders_books_table.book_id WHERE books_table.id=($1)';
-      const result = await conn.query(sql, [id]);
-
-      return result.rows.map(BookOrder.fromRow);
-    } catch (err) {
-      throw new Error(`Could not get books orders. Error: ${err}`);
     } finally {
       conn.release();
     }
